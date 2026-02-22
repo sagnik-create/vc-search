@@ -31,11 +31,13 @@ export default function CompanyProfileClient({ id }: { id: string }) {
   useEffect(() => {
     async function fetchCompany() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/companies/${id}`);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE}/companies/${id}`
+        );
         if (!res.ok) throw new Error("Not found");
         const data = await res.json();
         setCompany(data);
-      } catch (err) {
+      } catch {
         setCompany(null);
       } finally {
         setLoadingCompany(false);
@@ -49,6 +51,8 @@ export default function CompanyProfileClient({ id }: { id: string }) {
   if (!company) return <p>Company not found</p>;
 
   async function handleEnrich() {
+    if (!company) return; // ✅ TypeScript-safe guard
+
     try {
       setLoading(true);
       setError(null);
@@ -92,49 +96,49 @@ export default function CompanyProfileClient({ id }: { id: string }) {
       {error && <p className="text-red-600">{error}</p>}
 
       {enriched && (
-  <div className="bg-white p-4 rounded border space-y-2 text-black">
-    <h2 className="font-semibold text-black">Enriched Data</h2>
+        <div className="bg-white p-4 rounded border space-y-2 text-black">
+          <h2 className="font-semibold text-black">Enriched Data</h2>
 
-    <p>
-      <b>Summary:</b> {enriched.summary}
-    </p>
+          <p>
+            <b>Summary:</b> {enriched.summary}
+          </p>
 
-    <div>
-      <b>What they do:</b>
-      <ul className="list-disc ml-5">
-        {enriched.whatTheyDo.map((item, i) => (
-          <li key={i}>{item}</li>
-        ))}
-      </ul>
-    </div>
+          <div>
+            <b>What they do:</b>
+            <ul className="list-disc ml-5">
+              {enriched.whatTheyDo.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+          </div>
 
-    <p>
-      <b>Keywords:</b> {enriched.keywords.join(", ")}
-    </p>
+          <p>
+            <b>Keywords:</b> {enriched.keywords.join(", ")}
+          </p>
 
-    <div>
-      <b>Signals:</b>
-      <ul className="list-disc ml-5">
-        {enriched.signals.map((s, i) => (
-          <li key={i}>{s}</li>
-        ))}
-      </ul>
-    </div>
+          <div>
+            <b>Signals:</b>
+            <ul className="list-disc ml-5">
+              {enriched.signals.map((s, i) => (
+                <li key={i}>{s}</li>
+              ))}
+            </ul>
+          </div>
 
-    <div>
-      <b>Sources:</b>
-      <ul className="list-disc ml-5">
-        {enriched.sources.map((src, i) => (
-          <li key={i}>
-            <a href={src} target="_blank" className="text-blue-600 underline">
-              {src}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  </div>
-)}
+          <div>
+            <b>Sources:</b>
+            <ul className="list-disc ml-5">
+              {enriched.sources.map((src, i) => (
+                <li key={i}>
+                  <a href={src} target="_blank" className="text-blue-600 underline">
+                    {src}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
