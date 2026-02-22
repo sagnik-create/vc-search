@@ -21,6 +21,7 @@ type EnrichedData = {
 };
 
 export default function CompanyProfileClient({ id }: { id: string }) {
+  console.log("API BASE:", process.env.NEXT_PUBLIC_API_BASE ?? "MISSING");
   const [company, setCompany] = useState<Company | null>(null);
   const [loadingCompany, setLoadingCompany] = useState(true);
 
