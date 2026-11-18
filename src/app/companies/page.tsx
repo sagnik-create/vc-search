@@ -1,114 +1,152 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-type Company = {
-  id: string;
-  name: string;
-  website: string;
-  industry: string;
-  stage: string;
-  location: string;
-};
-
-export default function CompaniesPage() {
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [form, setForm] = useState({
+export default function Companies() {
+  const [formData, setFormData] = useState({
     name: "",
     website: "",
+    email: "",
     industry: "",
     stage: "",
     location: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
-  async function fetchCompanies() {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/companies`);
-    const data = await res.json();
-    setCompanies(data);
-  }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  useEffect(() => {
-    fetchCompanies();
-  }, []);
-
-  async function handleAddCompany(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/companies`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-
-    setForm({
-      name: "",
-      website: "",
-      industry: "",
-      stage: "",
-      location: "",
-    });
-
-    fetchCompanies();
-  }
+    setLoading(true);
+    setMessage("");
+    
+    try {
+      const res = await fetch("http://127.0.0.1:8000/companies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      
+      if (!res.ok) throw new Error("Failed to add company");
+      
+      setMessage("Company added successfully!");
+      setFormData({ name: "", website: "", email: "", industry: "", stage: "", location: "" });
+    } catch (err: any) {
+      setMessage(err.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="space-y-6 text-black">
-      <h1 className="text-2xl font-semibold">Discover Companies</h1>
+    <div className="p-10 max-w-4xl mx-auto w-full">
+      <div className="mb-8">
+        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Discover Companies</h1>
+        <p className="text-gray-500 mt-2 text-lg">Add and discover new early-stage startups.</p>
+      </div>
 
-      {/* Add Company */}
-      <form onSubmit={handleAddCompany} className="grid grid-cols-2 gap-2 max-w-xl">
-        <input
-          className="border p-2 rounded"
-          placeholder="Name"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          required
-        />
-        <input
-          className="border p-2 rounded"
-          placeholder="Website"
-          value={form.website}
-          onChange={(e) => setForm({ ...form, website: e.target.value })}
-          required
-        />
-        <input
-          className="border p-2 rounded"
-          placeholder="Industry"
-          value={form.industry}
-          onChange={(e) => setForm({ ...form, industry: e.target.value })}
-          required
-        />
-        <input
-          className="border p-2 rounded"
-          placeholder="Stage"
-          value={form.stage}
-          onChange={(e) => setForm({ ...form, stage: e.target.value })}
-          required
-        />
-        <input
-          className="border p-2 rounded"
-          placeholder="Location"
-          value={form.location}
-          onChange={(e) => setForm({ ...form, location: e.target.value })}
-          required
-        />
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Company Name</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="e.g. Acme Corp"
+                required
+                className="w-full border border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Website</label>
+              <input
+                type="url"
+                name="website"
+                value={formData.website}
+                onChange={handleChange}
+                placeholder="e.g. https://acme.com"
+                required
+                className="w-full border border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              />
+            </div>
 
-        <button className="col-span-2 bg-black text-white py-2 rounded">
-          Add Company
-        </button>
-      </form>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Email Contact</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="e.g. founder@acme.com"
+                required
+                className="w-full border border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              />
+            </div>
 
-      {/* Companies List */}
-      <div className="space-y-2">
-        {companies.map((c) => (
-          <a
-            key={c.id}
-            href={`/companies/${c.id}`}
-            className="block border p-3 rounded hover:bg-gray-50"
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Industry</label>
+              <input
+                type="text"
+                name="industry"
+                value={formData.industry}
+                onChange={handleChange}
+                placeholder="e.g. SaaS, Fintech"
+                required
+                className="w-full border border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Stage</label>
+              <select
+                name="stage"
+                value={formData.stage}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white"
+              >
+                <option value="">Select Stage...</option>
+                <option value="pre-seed">Pre-seed</option>
+                <option value="seed">Seed</option>
+                <option value="series-a">Series A</option>
+              </select>
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-semibold text-gray-700">Location</label>
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="e.g. San Francisco, CA"
+                required
+                className="w-full border border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              />
+            </div>
+          </div>
+
+          {message && (
+            <div className={`p-4 rounded-xl ${message.includes("success") ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+              {message}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-semibold text-lg transition-colors shadow-sm disabled:opacity-50"
           >
-            <b>{c.name}</b> – {c.industry} ({c.stage})
-          </a>
-        ))}
+            {loading ? "Adding..." : "Add Company"}
+          </button>
+        </form>
       </div>
     </div>
   );
